@@ -32,6 +32,90 @@ mongoose
   .catch((err) => console.error("Could not connect to MongoDB", err));
 
 // Routes
+app.get("/api/states", async (req, res) => {
+  try {
+    const states = await User.distinct("state");
+    res.json({ states });
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+const nodemailer = require("nodemailer");
+
+let configOptions = {
+  service: "gmail",
+  host: "smtp.gmail.com", // Update with your SMTP server's host
+  secure: true,
+  tls: {
+    servername: "smtp.gmail.com",
+    // Add additional TLS options if needed
+  },
+  auth: {
+    user: process.env.MAIL_ID, // Your Gmail email address
+    pass: process.env.MAIL_PASS, // Your Gmail password or App Password
+  },
+};
+
+const transporter = nodemailer.createTransport(configOptions);
+
+app.post("/sendmail", async (req, res) => {
+  const { email, startDate, endDate, price, clientEmail } = req.body;
+
+  try {
+    const mailOptions = {
+      from: process.env.SMTP_MAIL,
+      to: email,
+      subject: "CamCrew Slot Booked Successfully",
+      text: `Hello Cameraman,\n\nHere's a new booking for you from ${startDate} to ${endDate}.\nThe advanced amount ${price} has been paid and the rest will be given in hand by the client.\nContact ${clientEmail} for details and information.\n\nTerms and conditions applied`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.status(200).send("Booking confirmation email sent successfully");
+  } catch (error) {
+    console.error("Error sending email:", error);
+    res.status(500).send("Error sending email");
+  }
+});
+
+app.post("/cilentsendmail", async (req, res) => {
+  const { email, userName, price, cameramanMail } = req.body;
+
+  try {
+    const mailOptions = {
+      from: process.env.SMTP_MAIL,
+      to: email,
+      subject: "Your Cameraman Booked Successfully on CamCrew",
+      text: `Hello ${userName},\n\nYour booking has been made successfully with an advance payment of ${price}. Pay the rest amount after the completion of the event to the cameraman in hand.\n\nYou can contact the cameraman by his mail: ${cameramanMail}.\n\nLooking forward to more bookings from you.\n\nBest Wishes...`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.status(200).send("Booking confirmation email sent successfully");
+  } catch (error) {
+    console.error("Error sending email:", error);
+    res.status(500).send("Error sending email");
+  }
+});
+
+app.get("/state/:email", async (req, res) => {
+  try {
+    const email = req.params.email;
+    // Query the database for the user with the given email
+    const user = await User.findOne({ email });
+    if (!user) {
+      // If user with the given email is not found, return an error
+      return res.status(404).json({ error: "User not found" });
+    }
+    // If user is found, return the state
+    res.json({ state: user.state });
+  } catch (err) {
+    // If an error occurs, return a 500 error
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Start the server
 
 app.use("/api/items", itemRoutes);
 app.use("/api/rating", ratingRoutes);
