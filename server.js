@@ -21,7 +21,7 @@ app.use(express.json());
 // Connect to MongoDB  dishantsahuinfy70  pss: ghjsRVEGZnDP8tT9
 mongoose
   .connect(
-    "mongodb+srv://rajghaznavi:pswrd..00@cluster0.1wf3ruz.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
+    "mongodb+srv://rajghaznavi:pswrd..00@cluster0.om5baba.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
     {
       useNewUrlParser: true,
       useUnifiedTopology: true,
